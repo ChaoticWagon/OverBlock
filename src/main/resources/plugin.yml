@@ -1,0 +1,6 @@
+name: OverBlock
+version: '${project.version}'
+main: me.chaoticwagon.overblock.Main
+api-version: 1.17
+authors: [ ChaoticWagon, Skrate67 ]
+description: pew pew boom
