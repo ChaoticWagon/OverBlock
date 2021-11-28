@@ -11,6 +11,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class M4A1 extends Gun implements Listener {
 
     @Override
@@ -57,17 +60,35 @@ public class M4A1 extends Gun implements Listener {
         return 2.5;
     }
 
+    boolean isReloading = false;
+    long time;
+    Map<Player,Integer> currentAmmo = new HashMap<Player, Integer>();
+
     @EventHandler
     public void onShoot(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR)) return;
         if(!p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equalsIgnoreCase(getName())) return;
 
+        if (!currentAmmo.containsKey(p)){
+            currentAmmo.put(p, getAmmo());
+        }
+
+        if(currentAmmo.get(p) == 0) {
+            reload(p);
+            if (isReloading) {
+                p.sendMessage("Reloading...");
+                e.setCancelled(true);
+                return;
+            }
+        }
+
         Snowball bullet = p.getWorld().spawn(p.getEyeLocation(), Snowball.class);
         bullet.setShooter(p);
-        bullet.setVelocity(p.getLocation().getDirection().multiply(2));
+        bullet.setVelocity(p.getLocation().getDirection().multiply(4));
+        currentAmmo.put(p, currentAmmo.get(p) - 1);
+        p.sendMessage(currentAmmo.get(p) + " bullets left");
     }
-
     @EventHandler
     public void onHit(ProjectileHitEvent e){
         if (!(e.getEntity().getShooter() instanceof Player)) return;
@@ -77,6 +98,20 @@ public class M4A1 extends Gun implements Listener {
         Player p = (Player) e.getEntity().getShooter();
         Player target =  (Player) e.getHitEntity();
         target.damage(getDamage());
+        p.sendMessage(target.getName() + " now has " + target.getHealth() + " health");
+    }
+    public void reload(Player p){
+        if (!isReloading) {
+            time =  (System.currentTimeMillis() + ((long) getReloadTime() * 1000));
+            isReloading = true;
+
+        }else{
+            if (System.currentTimeMillis() > time) {
+                currentAmmo.put(p, getAmmo());
+                isReloading = false;
+            }
+        }
+
     }
 
 
