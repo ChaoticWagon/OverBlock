@@ -1,10 +1,14 @@
-package me.chaoticwagon.overblock.guns;
+package me.chaoticwagon.overblock.guns.assaultRifles;
 
+import me.chaoticwagon.overblock.guns.FiringMode;
+import me.chaoticwagon.overblock.guns.Gun;
+import me.chaoticwagon.overblock.guns.GunType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class M4A1 extends Gun implements Listener {
@@ -20,7 +24,7 @@ public class M4A1 extends Gun implements Listener {
 
     @Override
     public double getDamage() {
-        return 4.5;
+        return 3;
     }
 
     @Override
@@ -62,7 +66,18 @@ public class M4A1 extends Gun implements Listener {
         Snowball bullet = p.getWorld().spawn(p.getEyeLocation(), Snowball.class);
         bullet.setShooter(p);
         bullet.setVelocity(p.getLocation().getDirection().multiply(2));
-
-
     }
+
+    @EventHandler
+    public void onHit(ProjectileHitEvent e){
+        if (!(e.getEntity().getShooter() instanceof Player)) return;
+        if (!(e.getHitEntity() instanceof Player)) return;
+        if (!(e.getEntity() instanceof Snowball)) return;
+
+        Player p = (Player) e.getEntity().getShooter();
+        Player target =  (Player) e.getHitEntity();
+        target.damage(getDamage());
+    }
+
+
 }
